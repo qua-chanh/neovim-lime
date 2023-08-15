@@ -1,13 +1,14 @@
+local utils = require("utils")
+
 local M = {}
 
 function M.load()
     vim.loop.new_async(vim.schedule_wrap(function()
         local left = ""
-        for buffer = 1, vim.fn.bufnr('$') do
-            local path = vim.api.nvim_buf_get_name(buffer)
-            local file_name = path:match("^.+/(.+)$")
-
-            left = left .. file_name
+        for bufnr = 1, vim.fn.bufnr('$') do
+            if not utils.is_empty_buf(bufnr) then 
+                left = left .. utils.get_buf_file_name(bufnr)
+            end
         end
 
         vim.opt.tabline = "%#TablineBackground#" .. left

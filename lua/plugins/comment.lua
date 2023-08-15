@@ -9,62 +9,85 @@ local function is_empty(line)
     return line:match('^%s*$')
 end
 
-function M.toggle(line_start, line_end)
+local function is_valid_comment_string(comment_string)
+    return comment_string:match('%%s')
+end
+
+local function is_commented(line, left_comment)
+    return line:find('^%s*' .. vim.pesc(left_comment))
+end
+
+local function get_comment()
     local comment_string = api.nvim_get_option_value("commentstring", {buf = 0})
-    if not comment_string:match('%%s') then
+    if not is_valid_comment_string(comment_string) then
         return
     end
 
-    local left_comment, right_comment = comment_string:match('^(.*)%%s(.*)')
-    local escape_left_comment = vim.pesc(left_comment)
+    return comment_string:match('^(.*)%%s(.*)')
+end
 
-    local is_commented
-    local indent
-
-    local lines = api.nvim_buf_get_lines(0, line_start - 1, line_end, false)
-
+local function get_min_indent(lines)
+    local min_indent
     for _, line in pairs(lines) do
-        -- Check data is commented
-        if not is_commented and line:find('^%s*' .. escape_left_comment) then
-            is_commented = true
-        end
-
-        -- Find smallest indent
         local line_indent = get_indent(line)
-        if not indent or string.len(line_indent) < string.len(indent) then
-            indent = line_indent
+        if not min_indent or string.len(line_indent) < string.len(min_indent) then
+            min_indent = line_indent
         end
     end
 
-    if is_commented then
-        for i, v in pairs(lines) do
-            local line = v
-            -- Remove right comment
-            if right_comment then
-                line = line:gsub(vim.pesc(right_comment) .. '$', '')
-            end
+    return min_indent
+end
 
-            -- Remove left comment
-            lines[i] = line:gsub(escape_left_comment, '', 1)
+function M.uncomment(line_start, line_end)
+    local left_comment, right_comment = get_comment()
+    local lines = api.nvim_buf_get_lines(0, line_start - 1, line_end, false)
+
+    for i, v in pairs(lines) do
+        local line = v
+        -- Remove right comment
+        if right_comment then
+            line = line:gsub(vim.pesc(right_comment) .. '$', '')
         end
-    else
-        for i, v in pairs(lines) do
-            if not is_empty(v) then
-                -- Remove indent
-                local line = v:gsub('^' .. indent, '')
 
-                -- Add right comment
-                if right_comment then
-                    line = line .. right_comment
-                end
+        -- Remove left comment
+        lines[i] = line:gsub(vim.pesc(left_comment), '', 1)
+    end
 
-                -- Add indent and left comment
-                lines[i] = indent .. left_comment .. line
+    api.nvim_buf_set_lines(0, line_start - 1, line_end, false, lines)
+end
+
+function M.comment(line_start, line_end)
+    local left_comment, right_comment = get_comment()
+    local lines = api.nvim_buf_get_lines(0, line_start - 1, line_end, false)
+
+    local indent = get_min_indent(lines)
+    for i, v in pairs(lines) do
+        if not is_empty(v) then
+            -- Remove indent
+            local line = v:gsub('^' .. indent, '')
+
+            -- Add right comment
+            if right_comment then
+                line = line .. right_comment
             end
+
+            -- Add indent and left comment
+            lines[i] = indent .. left_comment .. line
         end
     end
 
     api.nvim_buf_set_lines(0, line_start - 1, line_end, false, lines)
+end
+
+function M.toggle(line_start, line_end)
+    local left_comment, _ = get_comment()
+    local line = api.nvim_buf_get_lines(0, line_start - 1, line_start, false)[1]
+
+    if is_commented(line, left_comment) then
+        M.uncomment(line_start, line_end)
+    else
+        M.comment(line_start, line_end)
+    end
 end
 
 return M
