@@ -18,7 +18,7 @@ local function is_commented(line, left_comment)
 end
 
 local function get_comment()
-    local comment_string = api.nvim_get_option_value("commentstring", {buf = 0})
+    local comment_string = vim.bo.commentstring
     if not is_valid_comment_string(comment_string) then
         return
     end

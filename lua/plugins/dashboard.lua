@@ -40,33 +40,7 @@ end
 
 local cache_header = {}
 
-local render_header = coroutine.create(function(bufnr)
-    local centered_lines = {}
-
-    local top = math.floor((fn.winheight(0) - #default_banner) / 2)
-    for _ = 1, top do
-        table.insert(centered_lines, "")
-    end
-
-    local width = math.floor((fn.winwidth(0) - fn.strwidth(default_banner[1])) / 2)
-    local space = vim.fn["repeat"](" ", width)
-    for i = 1, #default_banner do
-        table.insert(centered_lines, space .. default_banner[i])
-    end
-
-    cache_header = centered_lines
-    set_line_with_highlight(bufnr, centered_lines)
-end)
-
 function M.instance()
-    if api.nvim_get_mode().mode == "i" or not vim.bo.modifiable then
-        return
-    end
-
-    if not vim.o.hidden and vim.bo.modfied then
-        return
-    end
-
     local bufnr
 
     if vim.fn.line2byte("$") ~= -1 then
@@ -97,6 +71,24 @@ function M.instance()
     if dashboard_loaded then
         set_line_with_highlight(bufnr, cache_header)
     else
+        local render_header = coroutine.create(function(bufnr)
+            local centered_lines = {}
+
+            local top = math.floor((fn.winheight(0) - #default_banner) / 2)
+            for _ = 1, top do
+                table.insert(centered_lines, "")
+            end
+
+            local width = math.floor((fn.winwidth(0) - fn.strwidth(default_banner[1])) / 2)
+            local space = vim.fn["repeat"](" ", width)
+            for i = 1, #default_banner do
+                table.insert(centered_lines, space .. default_banner[i])
+            end
+
+            cache_header = centered_lines
+            set_line_with_highlight(bufnr, centered_lines)
+        end)
+
         coroutine.resume(render_header, bufnr)
         dashboard_loaded = true
     end
