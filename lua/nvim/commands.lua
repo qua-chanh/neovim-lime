@@ -6,7 +6,7 @@ vim.api.nvim_create_autocmd( 'FileType', { pattern = 'lua',
   end
 })
 
-vim.api.nvim_create_autocmd({ "Bufenter", "BufWritePost" }, {
+vim.api.nvim_create_autocmd({ "Bufenter", "BufWritePost", "BufDelete", "BufWipeout", "BufLeave" }, {
     group = vim.api.nvim_create_augroup("Tabline", {}),
     pattern = "*",
     callback = function()

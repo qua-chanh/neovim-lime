@@ -1,3 +1,7 @@
+local bo = vim.bo
+local cmd = vim.cmd
+local api = vim.api
+
 local utils = require("utils")
 
 local M = {}
@@ -50,6 +54,32 @@ function M.prev()
         vim.api.nvim_win_set_buf(0, M.buffers[#M.buffers])
     else
         vim.api.nvim_win_set_buf(0, M.buffers[index - 1])
+    end
+end
+
+function M.close()
+    if bo.modified then
+        cmd("write")
+    end
+
+    local bufnr = api.nvim_get_current_buf()
+
+    local buffers = vim.tbl_filter(function(buf)
+        return bo[buf].buflisted and api.nvim_buf_is_valid(buf)
+    end, api.nvim_list_bufs())
+
+    if #buffers == 1 then
+        cmd("bd " .. bufnr)
+
+        require("plugins.dashboard").instance()
+    else
+        if bufnr ~= buffers[#buffers] then
+            cmd("bnext")
+        else
+            cmd("bprevious")
+        end
+
+        cmd("bd " .. bufnr)
     end
 end
 
