@@ -16,7 +16,11 @@ end
 function M.read()
     local path = get_path(default_dir)
 
-    vim.cmd('silent! source ' .. vim.fn.fnameescape(path))
+    local dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':h'):match("^.+/(.+)$")
+
+    if dir ~= '.git' then
+      vim.cmd('silent! source ' .. vim.fn.fnameescape(path))
+    end
 end
 
 function M.setup()
