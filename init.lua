@@ -4,6 +4,7 @@ require("nvim.options")
 require("treesitter")
 
 require("plugins.comment").setup()
+require("plugins.notify").setup()
 require("plugins.scrollbar").setup()
 require("plugins.session").setup()
 
