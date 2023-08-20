@@ -10,7 +10,12 @@ end
 function M.write()
     local path = get_path(default_dir)
 
-    vim.cmd('mksession! ' .. vim.fn.fnameescape(path))
+    local dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':h'):match("^.+/(.+)$")
+
+    if dir ~= '.git' then
+      vim.cmd('mksession! ' .. vim.fn.fnameescape(path))
+    end
+
 end
 
 function M.read()
