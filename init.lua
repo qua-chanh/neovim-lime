@@ -1,3 +1,5 @@
+require("settings")
+
 require("nvim.options")
 require("treesitter")
 

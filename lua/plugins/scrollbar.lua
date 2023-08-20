@@ -1,8 +1,6 @@
 local M = {}
 
-local highlight_const = require('nvim.highlights.const')
-
-local NAMESPACE = vim.api.nvim_create_namespace(require('plugins.scrollbar.const').NAMESPACE)
+local NAMESPACE = vim.api.nvim_create_namespace("Scrollbar")
 
 function M.clear()
     vim.api.nvim_buf_clear_namespace(0, NAMESPACE, 0, -1)
@@ -43,8 +41,6 @@ function M.render()
 end
 
 function M.setup()
-    vim.api.nvim_set_hl(0, "ScrollbarThumb", { bg = highlight_const.comment })
-
     vim.api.nvim_create_autocmd({"BufWinEnter", "TabEnter", "WinEnter", "TextChanged", "VimResized", "WinScrolled", }, {
         group = vim.api.nvim_create_augroup("Scrollbar", {}),
         pattern = "*",
