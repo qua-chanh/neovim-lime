@@ -3,7 +3,12 @@ local M = {}
 local default_dir = "~/.local/share/nvim/sessions"
 
 local function get_path(path)
-    return ("%s/%s.vim"):format(vim.fn.fnamemodify(path, ':p'), vim.fn.getcwd():gsub("/", "%%"))
+  local git_branch = ""
+  if vim.b.git_branch ~= "" then
+    git_branch = ("-%s"):format(vim.b.git_branch)
+  end
+
+  return ("%s/%s%s.vim"):format(vim.fn.fnamemodify(path, ':p'), vim.fn.getcwd():gsub("/", "%%"), git_branch)
 end
 
 function M.write()

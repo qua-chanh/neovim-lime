@@ -29,3 +29,9 @@ vim.api.nvim_create_autocmd({ "Bufenter", "BufWritePost" }, {
         require('plugins.statusline').load()
     end,
 })
+
+vim.api.nvim_create_autocmd({"FileType", "BufEnter", "FocusGained"}, {
+	callback = function()
+		vim.b.git_branch = require('utils.git').get_branch()
+	end
+})
