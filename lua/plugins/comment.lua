@@ -90,4 +90,8 @@ function M.toggle(line_start, line_end)
     end
 end
 
+function M.setup()
+    vim.api.nvim_command("command! -range CommentToggle lua require('plugins.comment').toggle(<line1>, <line2>)")
+end
+
 return M

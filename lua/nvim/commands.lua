@@ -1,5 +1,3 @@
-vim.api.nvim_command("command! -range CommentToggle lua require('plugins.comment').toggle(<line1>, <line2>)")
-
 vim.api.nvim_create_autocmd( 'FileType', { pattern = 'lua',
   callback = function(args)
     vim.treesitter.start(args.buf, 'lua')
@@ -34,4 +32,12 @@ vim.api.nvim_create_autocmd({"FileType", "BufEnter", "FocusGained"}, {
 	callback = function()
 		vim.b.git_branch = require('utils.git').get_branch()
 	end
+})
+
+vim.api.nvim_create_autocmd({"BufDelete", "BufWipeout", "BufLeave" }, {
+    callback = function()
+        if vim.b.has_graphic then
+            require('plugins.graphic').delete_all()
+        end
+    end,
 })

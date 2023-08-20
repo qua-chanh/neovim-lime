@@ -1,6 +1,7 @@
 local api, fn = vim.api, vim.fn
 local opt_local = vim.opt_local
 local M = {}
+local graphic = require('plugins.graphic')
 
 local dashboard_loaded = false
 
@@ -39,8 +40,11 @@ local set_line_with_highlight = function(bufnr, tbl)
 end
 
 local cache_header = {}
+local image_id
 
 function M.instance()
+    require('plugins.scrollbar').clear()
+
     local bufnr
 
     if vim.fn.line2byte("$") ~= -1 then
@@ -68,29 +72,44 @@ function M.instance()
     opt_local.colorcolumn = ""
     opt_local.bufhidden = "wipe"
 
-    if dashboard_loaded then
-        set_line_with_highlight(bufnr, cache_header)
+    if settings.terminal == "xterm-kitty" then
+        if not image_id then
+            image_id = graphic.transmit("~/.config/nvim/assets/lime.png") 
+        end
+
+        graphic.move_cursor(10, 40)
+        graphic.display({
+            f = 100,
+            c = 40,
+            r = 20,
+            i = image_id
+        })
+        graphic.restore_cursor()
     else
-        local render_header = coroutine.create(function(bufnr)
-            local centered_lines = {}
+        if dashboard_loaded then
+            set_line_with_highlight(bufnr, cache_header)
+        else
+            local render_header = coroutine.create(function(bufnr)
+                local centered_lines = {}
 
-            local top = math.floor((fn.winheight(0) - #default_banner) / 2)
-            for _ = 1, top do
-                table.insert(centered_lines, "")
-            end
+                local top = math.floor((fn.winheight(0) - #default_banner) / 2)
+                for _ = 1, top do
+                    table.insert(centered_lines, "")
+                end
 
-            local width = math.floor((fn.winwidth(0) - fn.strwidth(default_banner[1])) / 2)
-            local space = vim.fn["repeat"](" ", width)
-            for i = 1, #default_banner do
-                table.insert(centered_lines, ("%s%s"):format(space, default_banner[i]))
-            end
+                local width = math.floor((fn.winwidth(0) - fn.strwidth(default_banner[1])) / 2)
+                local space = vim.fn["repeat"](" ", width)
+                for i = 1, #default_banner do
+                    table.insert(centered_lines, ("%s%s"):format(space, default_banner[i]))
+                end
 
-            cache_header = centered_lines
-            set_line_with_highlight(bufnr, centered_lines)
-        end)
+                cache_header = centered_lines
+                set_line_with_highlight(bufnr, centered_lines)
+            end)
 
-        coroutine.resume(render_header, bufnr)
-        dashboard_loaded = true
+            coroutine.resume(render_header, bufnr)
+            dashboard_loaded = true
+        end
     end
 
     local opts = { noremap = true, silent = true, nowait = true }
@@ -99,10 +118,6 @@ function M.instance()
     api.nvim_buf_set_keymap(bufnr, "n", "w", "", opts)
     api.nvim_buf_set_keymap(bufnr, "n", "b", "", opts)
     api.nvim_buf_set_keymap(bufnr, "n", "<BS>", "", opts)
-
-    api.nvim_exec_autocmds("User DashboardReady", {
-        modeline = false,
-    })
 end
 
 return M
