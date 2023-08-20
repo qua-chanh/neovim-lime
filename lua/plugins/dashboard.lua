@@ -82,7 +82,7 @@ function M.instance()
             local width = math.floor((fn.winwidth(0) - fn.strwidth(default_banner[1])) / 2)
             local space = vim.fn["repeat"](" ", width)
             for i = 1, #default_banner do
-                table.insert(centered_lines, space .. default_banner[i])
+                table.insert(centered_lines, ("%s%s"):format(space, default_banner[i]))
             end
 
             cache_header = centered_lines

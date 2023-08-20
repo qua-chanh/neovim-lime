@@ -15,7 +15,7 @@ function M.load()
         for bufnr = 1, vim.fn.bufnr('$') do
             if not utils.is_hide_buf(bufnr) and not utils.is_empty_buf(bufnr) and vim.bo[bufnr].buflisted then 
                 table.insert(buffers, bufnr)
-                left = left .. " " .. utils.get_buf_file_name(bufnr)
+                left = ("%s %s"):format(left, utils.get_buf_file_name(bufnr))  
             end
         end
 
@@ -69,7 +69,7 @@ function M.close()
     end, api.nvim_list_bufs())
 
     if #buffers == 1 then
-        cmd("bd " .. bufnr)
+        cmd(("bd %s"):format(bufnr))
 
         require("plugins.dashboard").instance()
     else
@@ -79,7 +79,7 @@ function M.close()
             cmd("bprevious")
         end
 
-        cmd("bd " .. bufnr)
+        cmd(("bd %s"):format(bufnr))
     end
 end
 

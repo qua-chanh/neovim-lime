@@ -64,15 +64,15 @@ function M.comment(line_start, line_end)
     for i, v in pairs(lines) do
         if not is_empty(v) then
             -- Remove indent
-            local line = v:gsub('^' .. indent, '')
+            local line = v:gsub(('^%s'):format(indent), '')
 
             -- Add right comment
             if right_comment then
-                line = line .. right_comment
+                line = ("%s%s"):format(line, right_comment)
             end
 
             -- Add indent and left comment
-            lines[i] = indent .. left_comment .. line
+            lines[i] = ("%s%s%s"):format(indent, left_comment, line)
         end
     end
 

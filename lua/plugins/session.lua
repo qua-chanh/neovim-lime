@@ -3,8 +3,7 @@ local M = {}
 local default_dir = "~/.local/share/nvim/sessions"
 
 local function get_path(path)
-    filename = vim.fn.getcwd():gsub("/", "%%")
-    return vim.fn.fnamemodify(path, ':p') .. "/" .. filename .. ".vim"
+    return ("%s/%s.vim"):format(vim.fn.fnamemodify(path, ':p'), vim.fn.getcwd():gsub("/", "%%"))
 end
 
 function M.write()
@@ -13,7 +12,7 @@ function M.write()
     local dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':h'):match("^.+/(.+)$")
 
     if dir ~= '.git' then
-      vim.cmd('mksession! ' .. vim.fn.fnameescape(path))
+      vim.cmd(('mksession! %s'):format(vim.fn.fnameescape(path)))
     end
 
 end
@@ -24,7 +23,7 @@ function M.read()
     local dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':h'):match("^.+/(.+)$")
 
     if dir ~= '.git' then
-      vim.cmd('silent! source ' .. vim.fn.fnameescape(path))
+      vim.cmd(('silent! source %s'):format(vim.fn.fnameescape(path)))
     end
 end
 

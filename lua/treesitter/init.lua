@@ -1,1 +1,1 @@
-vim.treesitter.language.add('lua', { path = vim.fn.stdpath("config") ..  "/lua/treesitter/parsers/lua.so" })
+vim.treesitter.language.add('lua', { path = ("%s%s"):format(vim.fn.stdpath("config"), "/lua/treesitter/parsers/lua.so")})
