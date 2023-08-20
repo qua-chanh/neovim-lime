@@ -5,6 +5,7 @@ local M = {}
 M.index = 1
 M.images = {}
 M.show_images = {}
+M.image_path = {}
 
 local function get_chunked(str)
     local chunks = {}
@@ -27,7 +28,13 @@ local function send(ctrl, payload)
 end
 
 function M.transmit(path)
+    local is_new = true
     local id = M.index
+
+    if M.image_path[path] then
+        is_new = false
+        id = M.image_path[path]
+    end
 
     local payload = vim.fn.system(("base64 -w 0 %s"):format(path))
     local ctrl = ("f=100,i=%s"):format(id)
@@ -48,8 +55,11 @@ function M.transmit(path)
         end
     end
 
-    table.insert(M.images, id) 
-    M.index = id + 1
+    if is_new then
+        table.insert(M.images, id) 
+        M.image_path[path] = id
+        M.index = id + 1
+    end
 
     return id
 end

@@ -41,3 +41,9 @@ vim.api.nvim_create_autocmd({"BufDelete", "BufWipeout", "BufLeave" }, {
         end
     end,
 })
+
+vim.api.nvim_create_autocmd( {'BufNewFile', 'BufRead'}, { pattern = '*.png',
+  callback = function(args)
+    require('plugins.previewer').render()
+  end
+})
