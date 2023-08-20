@@ -1,17 +1,20 @@
 local M = {}
 
-local function get_path()
-    vim.fn.resolve(vim.fn.fnamemodify(vim.fn.getcwd(), ':p'))
+local default_dir = "~/.local/share/nvim/sessions"
+
+local function get_path(path)
+    filename = vim.fn.getcwd():gsub("/", "%%")
+    return vim.fn.fnamemodify(path, ':p') .. "/" .. filename .. ".vim"
 end
 
 function M.write()
-    local path = get_path()
+    local path = get_path(default_dir)
 
     vim.cmd('mksession! ' .. vim.fn.fnameescape(path))
 end
 
 function M.read()
-    local path = get_path()
+    local path = get_path(default_dir)
 
     vim.cmd('silent! source ' .. vim.fn.fnameescape(path))
 end

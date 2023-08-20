@@ -13,7 +13,7 @@ function M.load()
         local left = ""
         local buffers = {}
         for bufnr = 1, vim.fn.bufnr('$') do
-            if not utils.is_hide_buf(bufnr) and not utils.is_empty_buf(bufnr) then 
+            if not utils.is_hide_buf(bufnr) and not utils.is_empty_buf(bufnr) and vim.bo[bufnr].buflisted then 
                 table.insert(buffers, bufnr)
                 left = left .. " " .. utils.get_buf_file_name(bufnr)
             end
