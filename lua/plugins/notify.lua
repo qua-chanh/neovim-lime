@@ -24,7 +24,7 @@ setmetatable(M, {
 })
 
 function M.setup()
-    if settings.terminal == "xterm-kitty" then
+    if settings.env.terminal == "xterm-kitty" then
         vim.notify = require('plugins.notify')
     end
 end

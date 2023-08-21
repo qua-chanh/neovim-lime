@@ -43,8 +43,6 @@ local cache_header = {}
 local image_id
 
 function M.instance()
-    require('plugins.scrollbar').clear()
-
     local bufnr
 
     if vim.fn.line2byte("$") ~= -1 then
@@ -72,7 +70,7 @@ function M.instance()
     opt_local.colorcolumn = ""
     opt_local.bufhidden = "wipe"
 
-    if settings.terminal == "xterm-kitty" then
+    if settings.env.terminal == "xterm-kitty" then
         if not image_id then
             image_id = graphic.transmit("~/.config/nvim/assets/lime.png") 
         end

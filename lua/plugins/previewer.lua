@@ -6,7 +6,7 @@ local graphic = require('plugins.graphic')
 local M = {}
 
 function M.render()
-    if settings.terminal == "xterm-kitty" then
+    if settings.env.terminal == "xterm-kitty" then
         local bufnr = api.nvim_get_current_buf()
 
         vim.api.nvim_win_set_buf(api.nvim_get_current_win(), bufnr)

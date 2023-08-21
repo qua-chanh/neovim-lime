@@ -4,14 +4,6 @@ vim.api.nvim_create_autocmd( 'FileType', { pattern = 'lua',
   end
 })
 
-vim.api.nvim_create_autocmd({ "Bufenter", "BufWritePost", "BufDelete", "BufWipeout", "BufLeave" }, {
-    group = vim.api.nvim_create_augroup("Tabline", {}),
-    pattern = "*",
-    callback = function()
-        require('plugins.tabline').load()
-    end,
-})
-
 vim.api.nvim_create_autocmd({ "Bufenter", "BufWritePost" }, {
     group = vim.api.nvim_create_augroup("Winbar", {}),
     pattern = "*",
@@ -26,12 +18,6 @@ vim.api.nvim_create_autocmd({ "Bufenter", "BufWritePost" }, {
     callback = function()
         require('plugins.statusline').load()
     end,
-})
-
-vim.api.nvim_create_autocmd({"FileType", "BufEnter", "FocusGained"}, {
-	callback = function()
-		vim.b.git_branch = require('utils.git').get_branch()
-	end
 })
 
 vim.api.nvim_create_autocmd({"BufDelete", "BufWipeout", "BufLeave" }, {

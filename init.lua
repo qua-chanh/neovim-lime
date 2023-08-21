@@ -3,6 +3,8 @@ require("settings")
 require("nvim.options")
 require("treesitter")
 
+require("plugins.git").setup()
+require("plugins.tabline").setup()
 require("plugins.comment").setup()
 require("plugins.notify").setup()
 require("plugins.scrollbar").setup()
