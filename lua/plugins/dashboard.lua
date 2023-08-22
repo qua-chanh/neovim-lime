@@ -1,78 +1,75 @@
-local api, fn = vim.api, vim.fn
-local opt_local = vim.opt_local
-local M = {}
+local api, fn, opt_local = vim.api, vim.fn, vim.opt_local
+local nvim_buf_set_keymap = api.nvim_buf_set_keymap
+
 local graphic = require('plugins.graphic')
 
-local dashboard_loaded = false
-
-local default_banner = {
-    "⠀⠀⠀⠀⠀⠀⠀⢀⣴⣷⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣦⡀⠀⠀⠀⠀⠀⠀⠀",
-    "⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣦⡀⠀⠀⠀⠀⠀",
-    "⠀⠀⠀⢀⣴⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣦⡀⠀⠀⠀",
-    "⠀⢀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣦⡀⠀",
-    "⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣦",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣄⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠙⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠘⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣆⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠘⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠈⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-    "⠻⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟",
-    "⠀⠈⠻⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀",
-    "⠀⠀⠀⠈⠻⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀",
-    "⠀⠀⠀⠀⠀⠈⠻⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀⠀",
-    "⠀⠀⠀⠀⠀⠀⠀⠈⠻⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⠟⠁⠀⠀⠀⠀⠀⠀⠀",
+local Dashboard = {
+    loaded = false,
+    text = {},
+    namespace = api.nvim_create_namespace("Dashboard")
 }
 
-local set_line_with_highlight = function(bufnr, tbl)
-    api.nvim_buf_set_lines(bufnr, 1, #tbl, false, tbl)
+local function set_lines_highlight(bufnr)
+    local len = #Dashboard.text
+    api.nvim_buf_set_lines(bufnr, 1, len, false, Dashboard.text)
 
-    local dashboard_namespace = api.nvim_create_namespace("Dashboard")
-    for i = 1, #tbl do
-        api.nvim_buf_add_highlight(bufnr, dashboard_namespace, "DashboardHeader", i, 1, -1)
+    for i = 1, len do
+        api.nvim_buf_add_highlight(bufnr, Dashboard.namespace, "DashboardText", i, 1, -1)
     end
 end
 
-local cache_header = {}
-local image_id
+local function set_local_opts()
+    opt_local.bufhidden = "wipe"
+    opt_local.buflisted = false
+    opt_local.buftype = "nofile"
+    opt_local.colorcolumn = ""
+    opt_local.cursorcolumn = false
+    opt_local.cursorline = false
+    opt_local.filetype = "dashboard"
+    opt_local.foldcolumn = "0"
+    opt_local.list = false
+    opt_local.matchpairs = ""
+    opt_local.number = false
+    opt_local.relativenumber = false
+    opt_local.signcolumn = "no"
+    opt_local.spell = false
+    opt_local.swapfile = false
+end
 
-function M.instance()
-    local bufnr
+local function set_keymaps(bufnr)
+    local opts = { noremap = true, silent = true, nowait = true }
+    nvim_buf_set_keymap(bufnr, "n", "h", "", opts)
+    nvim_buf_set_keymap(bufnr, "n", "l", "", opts)
+    nvim_buf_set_keymap(bufnr, "n", "w", "", opts)
+    nvim_buf_set_keymap(bufnr, "n", "b", "", opts)
+    nvim_buf_set_keymap(bufnr, "n", "<BS>", "", opts)
+end
 
-    if vim.fn.line2byte("$") ~= -1 then
-        vim.cmd("noautocmd")
-        bufnr = api.nvim_create_buf(false, true)
-    else
-        bufnr = api.nvim_get_current_buf()
+local function center_dashboard_text()
+    local dashboard_text = settings.env.dashboard_text
+    local len = #dashboard_text
+
+    local top = math.floor((fn.winheight(0) - len) / 2)
+    for _ = 1, top do
+        table.insert(Dashboard.text, "")
     end
+
+    local space = vim.fn["repeat"](" ", math.floor((fn.winwidth(0) - fn.strwidth(dashboard_text[1])) / 2))
+    for i = 1, len do
+        table.insert(Dashboard.text, ("%s%s"):format(space, dashboard_text[i]))
+    end
+end
+
+function Dashboard.render()
+    local bufnr = api.nvim_get_current_buf()
 
     api.nvim_win_set_buf(api.nvim_get_current_win(), bufnr)
 
-    opt_local.signcolumn = "no"
-    opt_local.buftype = "nofile"
-    opt_local.swapfile = false
-    opt_local.spell = false
-    opt_local.relativenumber = false
-    opt_local.filetype = "dashboard"
-    opt_local.number = false
-    opt_local.list = false
-    opt_local.cursorline = false
-    opt_local.cursorcolumn = false
-    opt_local.buflisted = false
-    opt_local.matchpairs = ""
-    opt_local.foldcolumn = "0"
-    opt_local.colorcolumn = ""
-    opt_local.bufhidden = "wipe"
+    set_local_opts()
 
     if settings.env.terminal == "xterm-kitty" then
-        if not image_id then
-            image_id = graphic.transmit("~/.config/nvim/assets/lime.png") 
+        if not Dashboard.image_id then
+            Dashboard.image_id = graphic.transmit(settings.env.dashboard_image) 
         end
 
         graphic.move_cursor(10, 40)
@@ -80,42 +77,23 @@ function M.instance()
             f = 100,
             c = 40,
             r = 20,
-            i = image_id
+            i = Dashboard.image_id
         })
         graphic.restore_cursor()
     else
-        if dashboard_loaded then
-            set_line_with_highlight(bufnr, cache_header)
+        if Dashboard.loaded then
+            set_lines_highlight(bufnr)
         else
-            local render_header = coroutine.create(function(bufnr)
-                local centered_lines = {}
+            coroutine.resume(coroutine.create(function(bufnr)
+                center_dashboard_text()
+                set_lines_highlight(bufnr)
+            end), bufnr)
 
-                local top = math.floor((fn.winheight(0) - #default_banner) / 2)
-                for _ = 1, top do
-                    table.insert(centered_lines, "")
-                end
-
-                local width = math.floor((fn.winwidth(0) - fn.strwidth(default_banner[1])) / 2)
-                local space = vim.fn["repeat"](" ", width)
-                for i = 1, #default_banner do
-                    table.insert(centered_lines, ("%s%s"):format(space, default_banner[i]))
-                end
-
-                cache_header = centered_lines
-                set_line_with_highlight(bufnr, centered_lines)
-            end)
-
-            coroutine.resume(render_header, bufnr)
-            dashboard_loaded = true
+            Dashboard.loaded = true
         end
     end
 
-    local opts = { noremap = true, silent = true, nowait = true }
-    api.nvim_buf_set_keymap(bufnr, "n", "h", "", opts)
-    api.nvim_buf_set_keymap(bufnr, "n", "l", "", opts)
-    api.nvim_buf_set_keymap(bufnr, "n", "w", "", opts)
-    api.nvim_buf_set_keymap(bufnr, "n", "b", "", opts)
-    api.nvim_buf_set_keymap(bufnr, "n", "<BS>", "", opts)
+    set_keymaps(bufnr)
 end
 
-return M
+return Dashboard

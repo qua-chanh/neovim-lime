@@ -3,15 +3,15 @@ local opt_local = vim.opt_local
 
 local graphic = require('plugins.graphic')
 
-local M = {}
+local Previewer = {}
 
-function M.render()
+function Previewer.render()
     if settings.env.terminal == "xterm-kitty" then
         local bufnr = api.nvim_get_current_buf()
 
-        vim.api.nvim_win_set_buf(api.nvim_get_current_win(), bufnr)
+        api.nvim_win_set_buf(api.nvim_get_current_win(), bufnr)
 
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {})
+        api.nvim_buf_set_lines(bufnr, 0, -1, false, {})
 
         opt_local.signcolumn = "no"
         opt_local.buftype = "nofile"
@@ -39,4 +39,12 @@ function M.render()
     end
 end
 
-return M
+function Previewer.setup()
+    vim.api.nvim_create_autocmd( {'BufNewFile', 'BufRead'}, { pattern = '*.png',
+        callback = function()
+            Previewer.render()
+        end
+    })
+end
+
+return Previewer

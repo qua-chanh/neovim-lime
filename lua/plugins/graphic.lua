@@ -1,15 +1,24 @@
 local stdout = vim.loop.new_tty(1, false)
 
-local M = {}
+local Graphic = {
+    index = 1,
+    images = {},
+    show_images = {},
+    image_paths = {},
+    write = vim.schedule_wrap(function(data)
+        stdout:write(data)
+    end)
+}
 
-M.index = 1
-M.images = {}
-M.show_images = {}
-M.image_path = {}
+local function is_exist(image_id)
+    return vim.tbl_contains(Graphic.image_paths, function(_, v)
+        return v == image_id
+    end)
+end
 
 local function get_chunked(str)
     local chunks = {}
-    for i = 1,#str,4096 do
+    for i = 1, #str, 4096 do
         local chunk = str:sub(i, i + 4096 - 1):gsub('%s', '')
         if #chunk > 0 then
             table.insert(chunks, chunk)
@@ -21,19 +30,19 @@ end
 
 local function send(ctrl, payload)
     if payload then
-        M.write(('\x1b_G%s;%s\x1b\\'):format(ctrl, payload))
+        Graphic.write(('\x1b_G%s;%s\x1b\\'):format(ctrl, payload))
     else
-        M.write(('\x1b_G%s\x1b\\'):format(ctrl))
+        Graphic.write(('\x1b_G%s\x1b\\'):format(ctrl))
     end
 end
 
-function M.transmit(path)
+function Graphic.transmit(path)
     local is_new = true
-    local id = M.index
+    local id = Graphic.index
 
-    if M.image_path[path] then
+    if Graphic.image_paths[path] then
         is_new = false
-        id = M.image_path[path]
+        id = Graphic.image_paths[path]
     end
 
     local payload = vim.fn.system(("base64 -w 0 %s"):format(path))
@@ -44,11 +53,11 @@ function M.transmit(path)
         ctrl = ("%s,m=0"):format(ctrl)
     end
 
-    payload = get_chunked(payload)
-
-    for i=1,#payload do
-        send(ctrl, payload[i])
-        if i == #payload-1 then
+    local chunks = get_chunks(payload)
+    local len = #chunks
+    for i = 1, len do
+        send(ctrl, chunks[i])
+        if i == len - 1 then
             ctrl = 'm=0'
         else
             ctrl = 'm=1'
@@ -56,60 +65,63 @@ function M.transmit(path)
     end
 
     if is_new then
-        table.insert(M.images, id) 
-        M.image_path[path] = id
-        M.index = id + 1
+        table.insert(Graphic.images, id) 
+        Graphic.image_paths[path] = id
+        Graphic.index = id + 1
     end
 
     return id
 end
 
-function M.display(keys)
-    if keys.i == nil then
+function Graphic.display(keys)
+    if not keys.i then
         return
     end
 
-    if not vim.list_contains(M.images, keys.i) then
+    if not is_exist(keys.i) then
         return
     end
 
-    keys.a = "p"
-
-    local ctrl = ''
+    local ctrl = 'a=p,'
     for k, v in pairs(keys) do
         if v ~= nil then
-            ctrl = ctrl..k..'='..v..','
+            ctrl = ("%s%s=%s,"):format(ctrl, k, v)
         end
     end
 
     ctrl = ctrl:sub(0, -2)
     send(ctrl)
 
-    table.insert(M.show_images, keys.i) 
+    table.insert(Graphic.show_images, keys.i) 
 	vim.b.has_graphic = true
 end
 
-function M.delete_all()
-    for _, v in pairs(M.show_images) do
+function Graphic.delete_all()
+    for _, v in pairs(Graphic.show_images) do
         send(('a=d,i=%s'):format(v))
     end
 
-    M.show_images = {}
-
+    Graphic.show_images = {}
 	vim.b.has_graphic = false
 end
 
-function M.move_cursor(row, col)
-    M.write('\x1b[s')
-    M.write('\x1b['..row..':'..col..'H')
+function Graphic.move_cursor(row, col)
+    Graphic.write('\x1b[s')
+    Graphic.write(('\x1b[%s:%sH'):format(row, col))
 end
 
-function M.restore_cursor()
-    M.write('\x1b[u')
+function Graphic.restore_cursor()
+    Graphic.write('\x1b[u')
 end
 
-M.write = vim.schedule_wrap(function(data)
-    stdout:write(data)
-end)
+function Graphic.setup()
+    vim.api.nvim_create_autocmd({"BufDelete", "BufWipeout", "BufLeave" }, {
+        callback = function()
+            if vim.b.has_graphic then
+                Graphic.delete_all()
+            end
+        end
+    })
+end
 
-return M
+return Graphic

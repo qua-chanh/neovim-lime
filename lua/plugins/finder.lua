@@ -1,7 +1,7 @@
-local M = {}
+local Finder = {}
 
-function M.render()
+function Finder.render()
     local bufnr, winid = require('utils').create_floating_window()
 end
 
-return M
+return Finder

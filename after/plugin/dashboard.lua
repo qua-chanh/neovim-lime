@@ -9,7 +9,7 @@ api.nvim_create_autocmd("Vimenter", {
     nested = true,
     callback = function()
         if vim.fn.argc() == 0 and utils.is_empty_buf(0) then
-            require("plugins.dashboard").instance()
+            require("plugins.dashboard").render()
         end
     end,
 })

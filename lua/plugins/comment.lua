@@ -1,5 +1,5 @@
 local api = vim.api
-local M = {}
+local Comment = {}
 
 local function get_indent(line)
     return line:match('^%s+') or ''
@@ -38,7 +38,7 @@ local function get_min_indent(lines)
     return min_indent
 end
 
-function M.uncomment(line_start, line_end)
+function Comment.uncomment(line_start, line_end)
     local left_comment, right_comment = get_comment()
     local lines = api.nvim_buf_get_lines(0, line_start - 1, line_end, false)
 
@@ -56,7 +56,7 @@ function M.uncomment(line_start, line_end)
     api.nvim_buf_set_lines(0, line_start - 1, line_end, false, lines)
 end
 
-function M.comment(line_start, line_end)
+function Comment.comment(line_start, line_end)
     local left_comment, right_comment = get_comment()
     local lines = api.nvim_buf_get_lines(0, line_start - 1, line_end, false)
 
@@ -79,19 +79,19 @@ function M.comment(line_start, line_end)
     api.nvim_buf_set_lines(0, line_start - 1, line_end, false, lines)
 end
 
-function M.toggle(line_start, line_end)
+function Comment.toggle(line_start, line_end)
     local left_comment, _ = get_comment()
     local line = api.nvim_buf_get_lines(0, line_start - 1, line_start, false)[1]
 
     if is_commented(line, left_comment) then
-        M.uncomment(line_start, line_end)
+        Comment.uncomment(line_start, line_end)
     else
-        M.comment(line_start, line_end)
+        Comment.comment(line_start, line_end)
     end
 end
 
-function M.setup()
+function Comment.setup()
     vim.api.nvim_command("command! -range CommentToggle lua require('plugins.comment').toggle(<line1>, <line2>)")
 end
 
-return M
+return Comment

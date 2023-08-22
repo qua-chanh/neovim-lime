@@ -1,4 +1,5 @@
 local api, bo, cmd = vim.api, vim.bo, vim.cmd
+local nvim_win_set_buf = api.nvim_win_set_buf
 
 local utils = require("utils")
 
@@ -20,28 +21,20 @@ local function save_icon(bufnr)
     end
 end
 
-local function get_position()
-    return utils.index_of(Tabline.buffers, vim.api.nvim_win_get_buf(0))
-end
-
-function Tabline.load()
+function Tabline.render()
     vim.loop.new_async(vim.schedule_wrap(function()
         local left = ""
         local buffers = list_buffers()
         local cur_bufnr = api.nvim_get_current_buf()
 
-        if buffers[1] == cur_bufnr then
-            left = "▌"
-        end
-
         for i, bufnr in pairs(buffers) do
             local icon = " "
             if i ~= 1 then
-                if bufnr == cur_bufnr then
-                    icon = "▌"
-                else
-                    icon = "|"
-                end
+                icon = "|"
+            end
+
+            if bufnr == cur_bufnr then
+                icon = "▌"
             end
 
             left = ("%s%s  %s %s "):format(left, icon, vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':t'), save_icon(bufnr))  
@@ -52,33 +45,20 @@ function Tabline.load()
     end)):send()
 end
 
-function Tabline.next()
-    api.nvim_win_set_buf(0, Tabline.buffers[math.fmod(get_position(), #Tabline.buffers) + 1])
-end
-
-function Tabline.prev()
-    local index = get_position()
-
-    if index == 1 then
-        vim.api.nvim_win_set_buf(0, Tabline.buffers[#Tabline.buffers])
-    else
-        vim.api.nvim_win_set_buf(0, Tabline.buffers[index - 1])
-    end
-end
-
 function Tabline.close()
     if bo.modified then
         cmd("write")
     end
 
     local bufnr = api.nvim_get_current_buf()
+    local len = #Tabline.buffers
 
-    if #Tabline.buffers == 1 then
+    if len == 1 then
         cmd(("bd %s"):format(bufnr))
 
-        require("plugins.dashboard").instance()
+        require("plugins.dashboard").render()
     else
-        if bufnr ~= Tabline.buffers[#Tabline.buffers] then
+        if bufnr ~= Tabline.buffers[len] then
             cmd("bnext")
         else
             cmd("bprevious")
@@ -93,7 +73,7 @@ function Tabline.setup()
         group = vim.api.nvim_create_augroup("Tabline", {}),
         pattern = "*",
         callback = function()
-            Tabline.load()
+            Tabline.render()
         end,
     })
 end
