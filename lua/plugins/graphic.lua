@@ -2,7 +2,6 @@ local stdout = vim.loop.new_tty(1, false)
 
 local Graphic = {
     index = 1,
-    images = {},
     show_images = {},
     image_paths = {},
     write = vim.schedule_wrap(function(data)
@@ -16,7 +15,7 @@ local function is_exist(image_id)
     end)
 end
 
-local function get_chunked(str)
+local function get_chunks(str)
     local chunks = {}
     for i = 1, #str, 4096 do
         local chunk = str:sub(i, i + 4096 - 1):gsub('%s', '')
@@ -65,7 +64,6 @@ function Graphic.transmit(path)
     end
 
     if is_new then
-        table.insert(Graphic.images, id) 
         Graphic.image_paths[path] = id
         Graphic.index = id + 1
     end
