@@ -6,7 +6,7 @@ local Winbar = {
 
 function Winbar.render()
     vim.uv.new_async(vim.schedule_wrap(function()
-        local relative_path = string.gsub(vim.fn.expand("%"), "/", " > ")
+        local relative_path = string.gsub(vim.fn.expand("%:."), "/", " > ")
         vim.wo.winbar = "%#WinbarBackground#  " .. relative_path
     end)):send()
 end

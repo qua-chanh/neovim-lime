@@ -10,9 +10,9 @@ local Graphic = {
 }
 
 local function is_exist(image_id)
-    return vim.tbl_contains(Graphic.image_paths, function(_, v)
+    return vim.tbl_contains(Graphic.image_paths, function(v)
         return v == image_id
-    end)
+    end, {predicate = true})
 end
 
 local function get_chunks(str)
@@ -79,6 +79,8 @@ function Graphic.display(keys)
     if not is_exist(keys.i) then
         return
     end
+
+    print(2)
 
     local ctrl = 'a=p,'
     for k, v in pairs(keys) do
