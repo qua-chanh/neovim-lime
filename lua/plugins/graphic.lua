@@ -1,4 +1,4 @@
-local stdout = vim.loop.new_tty(1, false)
+local stdout = vim.uv.new_tty(1, false)
 
 local Graphic = {
     index = 1,

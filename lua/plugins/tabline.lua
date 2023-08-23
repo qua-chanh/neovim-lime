@@ -22,7 +22,7 @@ local function save_icon(bufnr)
 end
 
 function Tabline.render()
-    vim.loop.new_async(vim.schedule_wrap(function()
+    vim.uv.new_async(vim.schedule_wrap(function()
         local left = ""
         local buffers = list_buffers()
         local cur_bufnr = api.nvim_get_current_buf()

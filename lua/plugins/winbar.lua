@@ -1,15 +1,19 @@
-local Winbar = {}
+local nvim_create_autocmd = vim.api.nvim_create_autocmd
+
+local Winbar = {
+    group = vim.api.nvim_create_augroup("Winbar", {clear = false})
+}
 
 function Winbar.render()
-    vim.loop.new_async(vim.schedule_wrap(function()
+    vim.uv.new_async(vim.schedule_wrap(function()
         local relative_path = string.gsub(vim.fn.expand("%"), "/", " > ")
         vim.wo.winbar = "%#WinbarBackground#  " .. relative_path
     end)):send()
 end
 
 function Winbar.setup()
-    vim.api.nvim_create_autocmd({ "Bufenter", "BufWritePost" }, {
-        group = vim.api.nvim_create_augroup("Winbar", {}),
+    nvim_create_autocmd({ "Bufenter", "BufWritePost" }, {
+        group = Winbar.group,
         pattern = "*",
         callback = function()
             Winbar.render()

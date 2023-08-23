@@ -3,7 +3,7 @@ local bo = vim.bo
 local Statusline = {}
 
 function Statusline.render()
-    vim.loop.new_async(vim.schedule_wrap(function()
+    vim.uv.new_async(vim.schedule_wrap(function()
         local left = " " .. vim.b.git_branch
 
         local expand_tab = bo.expandtab and "Spaces: " or "Tab Size: "

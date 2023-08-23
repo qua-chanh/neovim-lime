@@ -17,15 +17,6 @@ local function is_commented(line, left_comment)
     return line:find('^%s*' .. vim.pesc(left_comment))
 end
 
-local function get_comment()
-    local comment_string = vim.bo.commentstring
-    if not is_valid_comment_string(comment_string) then
-        return
-    end
-
-    return comment_string:match('^(.*)%%s(.*)')
-end
-
 local function get_min_indent(lines)
     local min_indent
     for _, line in pairs(lines) do
@@ -39,7 +30,13 @@ local function get_min_indent(lines)
 end
 
 function Comment.uncomment(line_start, line_end)
-    local left_comment, right_comment = get_comment()
+    local comment_string = vim.bo.commentstring
+    if not is_valid_comment_string(comment_string) then
+        return
+    end
+
+    local left_comment, right_comment = comment_string:match('^(.*)%%s(.*)')
+
     local lines = api.nvim_buf_get_lines(0, line_start - 1, line_end, false)
 
     for i, v in pairs(lines) do
@@ -57,7 +54,12 @@ function Comment.uncomment(line_start, line_end)
 end
 
 function Comment.comment(line_start, line_end)
-    local left_comment, right_comment = get_comment()
+    local comment_string = vim.bo.commentstring
+    if not is_valid_comment_string(comment_string) then
+        return
+    end
+
+    local left_comment, right_comment = comment_string:match('^(.*)%%s(.*)')
     local lines = api.nvim_buf_get_lines(0, line_start - 1, line_end, false)
 
     local indent = get_min_indent(lines)
@@ -80,7 +82,12 @@ function Comment.comment(line_start, line_end)
 end
 
 function Comment.toggle(line_start, line_end)
-    local left_comment, _ = get_comment()
+    local comment_string = vim.bo.commentstring
+    if not is_valid_comment_string(comment_string) then
+        return
+    end
+
+    local left_comment, _ = comment_string:match('^(.*)%%s(.*)')
     local line = api.nvim_buf_get_lines(0, line_start - 1, line_start, false)[1]
 
     if is_commented(line, left_comment) then

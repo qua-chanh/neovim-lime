@@ -69,7 +69,7 @@ function Dashboard.render()
 
     if settings.env.terminal == "xterm-kitty" then
         if not Dashboard.image_id then
-            Dashboard.image_id = graphic.transmit(settings.env.dashboard_image) 
+            Dashboard.image_id = graphic.transmit(settings.env.dashboard_image)
         end
 
         graphic.move_cursor(10, 40)
@@ -84,10 +84,8 @@ function Dashboard.render()
         if Dashboard.loaded then
             set_lines_highlight(bufnr)
         else
-            coroutine.resume(coroutine.create(function(bufnr)
-                center_dashboard_text()
-                set_lines_highlight(bufnr)
-            end), bufnr)
+            center_dashboard_text()
+            set_lines_highlight(bufnr)
 
             Dashboard.loaded = true
         end
